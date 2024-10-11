@@ -33,7 +33,7 @@ def read_table():
     return one_word, two_word
 
 
-def predict(pinyin_text, one_word, two_word, alpha=1e-10, epsilon=1e-233):
+def predict(pinyin_text, one_word, two_word, alpha=1e-4, epsilon=1e-233):
     pinyin_list = pinyin_text.split()
 
     def calc_one_word_prob(pinyin, word):

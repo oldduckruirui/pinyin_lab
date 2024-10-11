@@ -20,7 +20,7 @@
 
 **必做要求**中使用的语料库为新浪新闻 2016 年 4 月至 2016 年 11 月共 8 个文件。
 
-语料库文件格式为每行一个 ` json` 格式的新闻，各字段内容为：
+语料库文件格式为每行一个 `json` 格式的新闻，各字段内容为：
 
 - `title` : 新闻标题
 
@@ -47,7 +47,7 @@
 
 $$
 \begin{aligned}
-P(w|\text{pinyin}) &= \frac{freq_1(w)}{\sum_{v\in word(\text{pinyin})} freq_1(v)}\\\\[2ex]
+P(w|\text{pinyin}) &= \frac{freq_1(w)}{\sum_{v\in word(\text{pinyin})} freq_1(v)}\\\\
 P(w_2|w_1) &= \frac{freq_2(w_1w_2)}{\sum_{v\in\sigma} freq_2(w_1v)}
 \end{aligned}
 $$
@@ -64,8 +64,8 @@ $$
 
 $$
 \begin{aligned}
-P(O) &= const\\\\[2ex]
-P(O|S) &\approx 1\\\\[2ex]
+P(O) &= const\\\\
+P(O|S) &\approx 1\\\\
 P(S) &= \prod_i P(w_i|w_1...w_{i-1})
 \end{aligned}
 $$
@@ -123,7 +123,7 @@ $$
 
 
 
-从表中来看，$\alpha$ 的值在 $10^{-7}$ 左右，推测准确率最佳。
+从表中来看， $\alpha$ 的值在 $10^{-7}$ 左右，推测准确率最佳。
 
 ##### 训练时长与总时长
 
@@ -281,11 +281,13 @@ $$
 与基于字的二元模型类似，问题转化为求解  $P(S)=\prod_i P(w_i|w_1...w_{i-1})$ 最大的 $S$.
 
 在基于字的三元模型中：
+
 $$
 \begin{aligned}
 P(S) &= \prod_i P(w_i|w_{i-2}w_{i-1})
 \end{aligned}
 $$
+
 同样利用 **viterbi** 动态规划算法求解即可.
 
 由于语料库中存在的二元词组很多，所以代码实现时仅选择出现次数最多的前 10 万个二元组 $w_{i-2}w_{i-1}$ ，然后统计在 $w_{i-2}w_{i-1}$ 之后出现 $w_i$ 的频率来计算 $P(w_i|w_{i-2}w_{i-1})$.
@@ -295,12 +297,14 @@ $$
 令 $f_i(w)$ 表示第 $i$ 个字为 $w$ 的概率， $g_i(vw)$ 表示第 $i-1$ 和第 $i$ 个字分别为 $v$ 和 $w$ 的概率.
 
 动态规划转移方程如下：
+
+$$ 
+\begin{aligned} 
+f_i(w_i) &= \min\{\min_{w_{i-1}} \{f_{i-1}(w_{i-1}) \cdot P(w_i|w_{i-1})\}, \min_{w_{i-2}w_{i-1}}\{g_{i-1}(w_{i-2}w_{i-1}) \cdot P'(w_i|w_{i-2}w_{i-1})\}\} \\
+g_i(w_{i-1}w_i) &= \min\{\min_{w_{i-1}} f_{i-1}(w_{i-1}) \cdot P'(w_i|w_{i-1}), \min_{w_{i-2}w_{i-1}}\{g_{i-1}(w_{i-2}w_{i-1}) \cdot P'(w_i|w_{i-2}w_{i-1})\}\} 
+\end{aligned} 
 $$
-\begin{aligned}
-f_i(w_i) &= \min\{\min_{w_{i-1}} \{f_{i-1}(w_{i-1}) \cdot P(w_i|w_{i-1})\},\min_{w_{i-2}w_{i-1}}\{g_{i-1}(w_{i-2}w_{i-1}) \cdot P'(w_i|w_{i-2}w_{i-1}\})\}\\\\[2ex]
-g_i(w_{i-1}w_i) &= \min\{\min_{w_{i-1}}f(w_{i-1}) \cdot P'(w_i|w_{i-1}),\min_{w_{i-2}w_{i-1}}\{g_{i-1}(w_{i-2}w_{i-1}) \cdot P'(w_i|w_{i-2}w_{i-1})\}
-\end{aligned}
-$$
+
 
 #### b. 实验效果
 
@@ -350,8 +354,6 @@ $$
 - 疫情以来的一次在外就餐 / 疫情以来第一次在外就餐
 
 - 毛泽东思想和中国特色社会主义理论体系该论 / 毛泽东思想和中国特色社会主义理论体系概论
-
-- 我想出门牌照了 / 我想出门拍照了
 
 **原因分析**
 
