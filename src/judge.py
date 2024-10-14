@@ -1,6 +1,6 @@
 import os
 import logging
-from src.const import DAT_DIR
+from .const import DAT_DIR
 
 
 def check(std_file, output_list):
@@ -23,8 +23,6 @@ def check(std_file, output_list):
 
 
 def judge(output_list):
-    logging.basicConfig(format="%(message)s", level=logging.INFO)
-
     std_file = os.path.join(DAT_DIR, "answer.txt")
 
     try:
@@ -34,8 +32,13 @@ def judge(output_list):
             word_accuracy_rate * 100))
         logging.info("-  sentence accuracy: {:.2f}%".format(
             sentence_accuracy_rate * 100))
+        word_accuracy_rate_str = "{:.2f}".format(word_accuracy_rate * 100)
+        sentence_accuracy_rate_str = "{:.2f}".format(
+            sentence_accuracy_rate * 100)
+        return word_accuracy_rate_str, sentence_accuracy_rate_str
     except Exception as e:
         logging.error("can't calculate accuracy: {}".format(e))
+        return "0.00", "0.00"
 
 
 if __name__ == "__main__":

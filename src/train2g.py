@@ -1,75 +1,57 @@
 import json
 import os
-import sys
 from tqdm import tqdm
 from glob import glob
-from . import stat
+from . import stats
+from .utils import metric
 
 
 from .const import COR_DIR, RES_DIR, SRC_DIR
 
-is_trained = False
+IS_TRAINED = False
 
 
-def freq_stat_line(freq_1_word, freq_2_word, word2pinyin, line):
+def freq_stat_line(freq_1_word, freq_2_word, word_list, line):
     line = line.strip()
     if len(line) == 0:
         return
     last_word = "#"
-    for i, word in enumerate(line):
-        if word not in word2pinyin:
+    for word in line:
+        if word not in word_list:
             last_word = "#"
             continue
-        # count 1-word frequency by pinyin
-        for pinyin in word2pinyin[word]:
-            if pinyin not in freq_1_word:
-                freq_1_word[pinyin] = {}
-            freq_1_word[pinyin][word] = freq_1_word[pinyin].get(word, 0) + 1
+        # count 1-word frequency
+        freq_1_word[word] = freq_1_word.get(word, 0) + 1
 
-        # count 2-word frequency by pinyin pair
+        # count 2-word frequency
         if last_word != "#":
             word_pair = last_word + word
-            for pinyin1 in word2pinyin[last_word]:
-                for pinyin2 in word2pinyin[word]:
-                    pinyin_text = pinyin1 + " " + pinyin2
-                    if pinyin_text not in freq_2_word:
-                        freq_2_word[pinyin_text] = {}
-                    freq_2_word[pinyin_text][word_pair] = freq_2_word[pinyin_text].get(
-                        word_pair, 0) + 1
+            freq_2_word[word_pair] = freq_2_word.get(word_pair, 0) + 1
 
         last_word = word
 
 
-def process_single_file(file_name, freq_one_word, freq_two_word, word2pinyin):
+def process_single_file(file_name, freq_one_word, freq_two_word, word_list):
     new_freq_one_word = {}
     new_freq_two_word = {}
-
     try:
         with open(file_name, "r", encoding="utf-8") as f:
-            for line in f.readlines():
+            for line in tqdm(f.readlines(), desc="Processing file...", leave=False):
                 freq_stat_line(new_freq_one_word,
-                               new_freq_two_word, word2pinyin, line)
+                               new_freq_two_word, word_list, line)
     except UnicodeDecodeError:
         new_freq_one_word = {}
         new_freq_two_word = {}
         with open(file_name, "r", encoding="gbk") as f:
-            for line in f.readlines():
+            for line in tqdm(f.readlines(), desc="Processing file...", leave=False):
                 freq_stat_line(new_freq_one_word,
-                               new_freq_two_word, word2pinyin, line)
+                               new_freq_two_word, word_list, line)
 
-    for pinyin in new_freq_one_word:
-        if pinyin not in freq_one_word:
-            freq_one_word[pinyin] = {}
-        for word in new_freq_one_word[pinyin]:
-            freq_one_word[pinyin][word] = freq_one_word[pinyin].get(
-                word, 0) + new_freq_one_word[pinyin][word]
+    for word, count in new_freq_one_word.items():
+        freq_one_word[word] = freq_one_word.get(word, 0) + count
 
-    for pinyin_text in new_freq_two_word:
-        if pinyin_text not in freq_two_word:
-            freq_two_word[pinyin_text] = {}
-        for word_pair, count in new_freq_two_word[pinyin_text].items():
-            freq_two_word[pinyin_text][word_pair] = freq_two_word[pinyin_text].get(
-                word_pair, 0) + count
+    for word_pair, count in new_freq_two_word.items():
+        freq_two_word[word_pair] = freq_two_word.get(word_pair, 0) + count
 
     return freq_one_word, freq_two_word
 
@@ -102,31 +84,30 @@ def get_word_list():
     return pinyin2word, word2pinyin
 
 
+@metric
 def process_files():
     pinyin2word, word2pinyin = get_word_list()
+
+    word_list = set(word2pinyin.keys())
 
     file_list = [filename for filename in glob(os.path.join(
         COR_DIR, "**/*"), recursive=True) if os.path.isfile(filename)]
 
     freq_one_word = {}
-    for pinyin in pinyin2word:
-        freq_one_word[pinyin] = {}
-        for word in pinyin2word[pinyin]:
-            freq_one_word[pinyin][word] = 1
-
     freq_two_word = {}
 
-    with tqdm(total=len(file_list), desc="Generating 2-word table...", leave=False) as pbar:
-        for idx, file in enumerate(file_list):
+    with tqdm(total=len(file_list), desc="Generating 2-word table...", leave=True) as pbar:
+        for file in file_list:
             pbar.set_description(
                 f"Generating 2-word table, processing file: {file}")
             freq_one_word, freq_two_word = process_single_file(
-                file, freq_one_word, freq_two_word, word2pinyin)
+                file, freq_one_word, freq_two_word, word_list)
             pbar.update(1)
 
-    return freq_one_word, freq_two_word
+    return pinyin2word, freq_one_word, freq_two_word
 
 
+@metric
 def dump_json(freq_one_word, freq_two_word):
     with open(os.path.join(RES_DIR, "one_word.json"), "w", encoding="utf-8") as f:
         json.dump(freq_one_word, f, ensure_ascii=False)
@@ -135,6 +116,7 @@ def dump_json(freq_one_word, freq_two_word):
         json.dump(freq_two_word, f, ensure_ascii=False)
 
 
+@metric
 def load_json():
     with open(os.path.join(RES_DIR, "one_word.json"), "r", encoding="utf-8") as f:
         freq_one_word = json.load(f)
@@ -146,32 +128,33 @@ def load_json():
 
 
 def train():
+    global IS_TRAINED
     try:
         freq_one_word, freq_two_word = load_json()
+        pinyin2word, _ = get_word_list()
     except FileNotFoundError or json.decoder.JSONDecodeError:
-        freq_one_word, freq_two_word = process_files()
+        pinyin2word, freq_one_word, freq_two_word = process_files()
         dump_json(freq_one_word, freq_two_word)
 
-    stat.freq_one_word, stat.freq_two_word = freq_one_word, freq_two_word
-    stat.prob_one_word, stat.prob_two_word = calculate_probability(
-        freq_one_word, freq_two_word)
-    is_trained = True
+    stats.freq_one_word, stats.freq_two_word = freq_one_word, freq_two_word
+    stats.prob_one_word, stats.prob_two_word = calculate_probability(pinyin2word,
+                                                                     freq_one_word, freq_two_word)
+    IS_TRAINED = True
 
 
-def calculate_probability(one_word, two_word):
-    prob_two_word = {}
-    for pinyin_text in two_word:
-        pinyin1 = pinyin_text.split()[0]
-        prob_two_word[pinyin_text] = {}
-        for word_pair, count in two_word[pinyin_text].items():
-            prob_two_word[pinyin_text][word_pair] = count / \
-                one_word[pinyin1][word_pair[0]]
-
+def calculate_probability(pinyin2word, one_word, two_word):
     prob_one_word = {}
-    for pinyin in one_word:
-        total = sum(one_word[pinyin].values())
+    for pinyin, words in pinyin2word.items():
         prob_one_word[pinyin] = {}
-        for word, count in one_word[pinyin].items():
-            prob_one_word[pinyin][word] = count / total
+        total = 0
+        for word in words:
+            total += one_word.get(word, 0)
+        for word in words:
+            prob_one_word[pinyin][word] = one_word.get(
+                word, 0) / (total + 1e-233)
+
+    prob_two_word = {}
+    for word_pair in two_word:
+        prob_two_word[word_pair] = two_word[word_pair] / one_word[word_pair[0]]
 
     return prob_one_word, prob_two_word
