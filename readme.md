@@ -4,12 +4,21 @@
 
 ```
 .
+├── assets
+│   ├── baike_2gram.png
+│   ├── baike_3gram_sentence.png
+│   ├── baike_3gram_word.png
+│   ├── sina_2gram.png
+│   ├── sina_3gram_sentence.png
+│   ├── sina_3gram_word.png
+│   ├── wiki_2gram.png
+│   ├── wiki_3gram_sentence.png
+│   └── wiki_3gram_word.png
 ├── corpus
 ├── data
 │   ├── answer.txt
 │   ├── input.txt
 │   └── output.txt
-├── judge.py
 ├── main.py
 ├── readme.md
 ├── report.md
@@ -20,12 +29,14 @@
     │   ├── 拼音汉字表.txt
     │   └── 一二级汉字表.txt
     ├── const.py
+    ├── judge.py
     ├── main_oj.py
     ├── predict2g.py
     ├── predict3g.py
-    ├── stat.py
+    ├── stats.py
     ├── train2g.py
-    └── train3g.py
+    ├── train3g.py
+    └── utils.py
 ```
 
 **文件目录以及格式**
@@ -49,7 +60,8 @@ python main.py [-h] [-3] [-a ALPHA]
 参数说明：
 
 + `-3`：选择使用三元模型，默认使用二元模型
-+ `-a`：输入 alpha 参数，默认为`1e-6`
++ `-a`：输入 alpha 参数，二元模型下默认为`1e-7`，三元模型下默认为`1e-4`
++ `-b`：输入 beta 参数，三元模型下默认为`1e-1`
 + `-h`：查看参数说明
 
 首次运行时，会自动进行语料库训练，训练数据会存放在 `res` 目录下。
