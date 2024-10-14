@@ -90,7 +90,7 @@ $$
 
 $$
 \begin{aligned}
-f_i(w_i) = \min_{w_{i-1}} \{f_{i-1}(w_{i-1}) \cdot P(w_i|w_{i-1})\}
+f_i(w_i) = \max_{w_{i-1}} \{f_{i-1}(w_{i-1}) \cdot P(w_i|w_{i-1})\}
 \end{aligned}
 $$
 
@@ -300,8 +300,8 @@ $$
 
 $$ 
 \begin{aligned} 
-f_i(w_i) &= \min\{\min_{w_{i-1}} \{f_{i-1}(w_{i-1}) \cdot P(w_i|w_{i-1})\}, \min_{w_{i-2}w_{i-1}}\{g_{i-1}(w_{i-2}w_{i-1}) \cdot P'(w_i|w_{i-2}w_{i-1})\}\} \\
-g_i(w_{i-1}w_i) &= \min\{\min_{w_{i-1}} f_{i-1}(w_{i-1}) \cdot P'(w_i|w_{i-1}), \min_{w_{i-2}w_{i-1}}\{g_{i-1}(w_{i-2}w_{i-1}) \cdot P'(w_i|w_{i-2}w_{i-1})\}\} 
+f_i(w_i) &= \max\{\max_{w_{i-1}} \{f_{i-1}(w_{i-1}) \cdot P(w_i|w_{i-1})\}, \max_{w_{i-2}w_{i-1}}\{g_{i-1}(w_{i-2}w_{i-1}) \cdot P'(w_i|w_{i-2}w_{i-1})\}\} \\
+g_i(w_{i-1}w_i) &= \max\{\max_{w_{i-1}} f_{i-1}(w_{i-1}) \cdot P'(w_i|w_{i-1}), \max_{w_{i-2}w_{i-1}}\{g_{i-1}(w_{i-2}w_{i-1}) \cdot P'(w_i|w_{i-2}w_{i-1})\}\} 
 \end{aligned} 
 $$
 
