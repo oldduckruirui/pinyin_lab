@@ -292,15 +292,12 @@ $$
 
 同样利用 **viterbi** 动态规划算法求解即可.
 
-令 $f_i(w)$ 表示第 $i$ 个字为 $w$ 的概率， $g_i(vw)$ 表示第 $i-1$ 和第 $i$ 个字分别为 $v$ 和 $w$ 的概率.
+令 $g_i(vw)$ 表示第 $i-1$ 和第 $i$ 个字分别为 $v$ 和 $w$ 的概率.
 
 动态规划转移方程如下：
 
 $$
-\begin{aligned} 
-f_i(w_i) &= \max\{\max_{w_{i-1}} \{f_{i-1}(w_{i-1}) \cdot P(w_i|w_{i-1})\}, \max_{w_{i-2}w_{i-1}}\{g_{i-1}(w_{i-2}w_{i-1}) \cdot P(w_i|w_{i-2}w_{i-1})\}\} \\
-g_i(w_{i-1}w_i) &= \max\{\max_{w_{i-1}} f_{i-1}(w_{i-1}) \cdot P(w_i|w_{i-1}), \max_{w_{i-2}w_{i-1}}\{g_{i-1}(w_{i-2}w_{i-1}) \cdot P(w_i|w_{i-2}w_{i-1})\}\} 
-\end{aligned}
+g_i(w_{i-1}w_i) = \max_{w_{i-2}w_{i-1}}\{g_{i-1}(w_{i-2}w_{i-1}) \cdot P(w_i|w_{i-2}w_{i-1})\}
 $$
 
 为了解决 $P(w_i|w_{i-2}w_{i-1})$ 可能为 $0$ 的问题，采用数据平滑处理，引入额外的参数 $\beta$ ：
@@ -311,6 +308,8 @@ P'(w_i|w_{i-2}w_{i-1}) &= (1-\beta)\cdot P(w_i|w_{i-2}w_{i-1}) + \beta\cdot P'(w
 P'(w_i|w_{i-2}w_{i-1}) &= (1-\beta)\cdot P(w_i|w_{i-2}w_{i-1}) + \beta\cdot [(1-\alpha)\cdot P(w_i|w_{i-1}) + \alpha\cdot P(w_i)]\\
 \end{aligned}
 $$
+
+注意 $i=1,2$ 时，由于尚未形成三元词，需先按照一元或二元模型进行动态规划.
 
 #### b. 实验效果
 

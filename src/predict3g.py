@@ -38,7 +38,7 @@ def predict(pinyin_text, alpha=1e-4, beta=1e-1, epsilon=1e-233):
             f_cur = {}
             f_new_path = {}
             if i == 1:
-                # update f_cur using f_prev
+                # update f_cur and g_cur using f_prev
                 for word1 in f_prev:
                     for word2 in one_word[py]:
                         word_pair = word1+word2
@@ -88,9 +88,12 @@ def predict(pinyin_text, alpha=1e-4, beta=1e-1, epsilon=1e-233):
                 g_prev, g_path = g_cur, g_new_path
             f_prev, f_path = f_cur, f_new_path
 
+    # in case that f_prev, g_prev is empty
+    f_prev['#'] = math.log(epsilon)
+    f_path['#'] = '#'
+    g_prev['#'] = math.log(epsilon)
+    g_path['#'] = '#'
     f_last_choice = max(f_prev.items(), key=lambda x: x[1])[0]
-    # in case that g_prev is empty
-    g_prev[''] = math.log(epsilon)
     g_last_choice = max(g_prev.items(), key=lambda x: x[1])[0]
     if f_prev[f_last_choice] > g_prev[g_last_choice]:
         return f_path[f_last_choice]
