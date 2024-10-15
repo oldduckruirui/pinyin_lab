@@ -55,7 +55,7 @@ def process_files():
 
     freq_three_word = {}
 
-    with tqdm(total=len(file_list), desc="Generating 3-word table...", leave=False) as pbar:
+    with tqdm(total=len(file_list), desc="Generating 3-word table...", leave=True) as pbar:
         for file in file_list:
             pbar.set_description(
                 f"Generating 3-word table, processing file: {file}")
