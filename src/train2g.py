@@ -148,10 +148,9 @@ def calculate_probability(pinyin2word, one_word, two_word):
         prob_one_word[pinyin] = {}
         total = 0
         for word in words:
-            total += one_word.get(word, 0)
+            total += one_word.get(word, 0) + 1
         for word in words:
-            prob_one_word[pinyin][word] = one_word.get(
-                word, 0) / (total + 1e-233)
+            prob_one_word[pinyin][word] = (one_word.get(word, 0) + 1) / total
 
     prob_two_word = {}
     for word_pair in two_word:

@@ -89,9 +89,9 @@ def predict(pinyin_text, alpha=1e-4, beta=1e-1, epsilon=1e-233):
             f_prev, f_path = f_cur, f_new_path
 
     # in case that f_prev, g_prev is empty
-    f_prev['#'] = math.log(epsilon)
+    f_prev['#'] = math.log(epsilon) * len(py_list)
     f_path['#'] = '#'
-    g_prev['#'] = math.log(epsilon)
+    g_prev['#'] = math.log(epsilon) * len(py_list)
     g_path['#'] = '#'
     f_last_choice = max(f_prev.items(), key=lambda x: x[1])[0]
     g_last_choice = max(g_prev.items(), key=lambda x: x[1])[0]

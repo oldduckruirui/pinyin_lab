@@ -37,7 +37,7 @@ def predict(py_text, alpha=1e-7, epsilon=1e-233):
                         new_path[word2] = path[word1] + word2
             f_prev = f_cur
             path = new_path
-    f_prev["#"] = math.log(epsilon)
+    f_prev["#"] = math.log(epsilon) * len(py_list)
     path["#"] = "#"
     last_choice = max(f_prev, key=f_prev.get)
     return path[last_choice]
